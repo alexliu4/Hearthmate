@@ -5,6 +5,6 @@ import 'package:hearthmate/main.dart';
 void main() {
   testWidgets('app boots', (WidgetTester tester) async {
     await tester.pumpWidget(const HearthmateApp());
-    expect(find.text('Pomodoro'), findsOneWidget);
+    expect(find.text('THE HEARTH ROOM'), findsOneWidget);
   });
 }
