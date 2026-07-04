@@ -37,49 +37,55 @@ class HearthObject extends Component with HasGameReference<HearthGame> {
       const Color(0xFF7C4DFF),
     ];
 
-    for (int i = 0; i < rainbow.length; i++) {
-      final double startAngle = (i / rainbow.length) * 2 * pi;
-      final double sweepAngle = (1 / rainbow.length) * 2 * pi;
-      canvas.drawArc(
-        gemRect,
-        startAngle,
-        sweepAngle,
-        true,
-        Paint()..color = rainbow[i]
-      );
+    // Drawing a pixelated sphere with rects
+    final double step = pu;
+    for (double x = -radius; x < radius; x += step) {
+      for (double y = -radius; y < radius; y += step) {
+        if (x * x + y * y <= radius * radius) {
+          final double angle = (atan2(y, x) + pi) / (2 * pi);
+          final int colorIndex = (angle * rainbow.length).floor() % rainbow.length;
+          canvas.drawRect(
+            Rect.fromLTWH(x, y, step, step),
+            Paint()..color = rainbow[colorIndex]..isAntiAlias = false,
+          );
+        }
+      }
     }
 
-    // Highlight
-    canvas.drawCircle(
-      Offset(-radius * 0.4, -radius * 0.4),
-      radius * 0.3,
-      Paint()..color = Colors.white.withValues(alpha: 0.6)
+    // Highlight (Rect based)
+    canvas.drawRect(
+      Rect.fromLTWH(-radius * 0.5, -radius * 0.5, 2 * pu, 2 * pu),
+      Paint()..color = Colors.white.withValues(alpha: 0.6)..isAntiAlias = false,
     );
 
-    // Shadow on ground
-    canvas.drawOval(
-      Rect.fromCenter(center: Offset(0, 10 * pu - bob), width: 8 * pu, height: 3 * pu),
-      Paint()..color = Colors.black.withValues(alpha: 0.2),
+    // Shadow on ground (Rect based)
+    canvas.drawRect(
+      Rect.fromLTWH(-4 * pu, 9 * pu - bob, 8 * pu, 2 * pu),
+      Paint()..color = Colors.black.withValues(alpha: 0.2)..isAntiAlias = false,
     );
 
-    // Magical Glow
-    canvas.drawCircle(
-      Offset.zero,
-      radius * 2.5,
-      Paint()
-        ..maskFilter = MaskFilter.blur(BlurStyle.normal, 3 * pu)
-        ..color = const Color(0xFFFFFFFF).withValues(alpha: 0.2 + (sin(_time * 3) + 1) * 0.1),
-    );
+    // Magical Glow (Rect based)
+    final double glowRadius = radius * 2;
+    for (double x = -glowRadius; x < glowRadius; x += step * 2) {
+      for (double y = -glowRadius; y < glowRadius; y += step * 2) {
+        if (x * x + y * y <= glowRadius * glowRadius) {
+          canvas.drawRect(
+            Rect.fromLTWH(x, y, step * 2, step * 2),
+            Paint()..color = Colors.white.withValues(alpha: 0.05 + (sin(_time * 3) + 1) * 0.05)..isAntiAlias = false,
+          );
+        }
+      }
+    }
 
     // Sparks/Particles
     for (int i = 0; i < 4; i++) {
       final double angle = _time * 2 + (i * pi / 2);
       final double dist = radius * 1.5 + sin(_time * 4 + i) * pu;
-      final double px = cos(angle) * dist;
-      final double py = sin(angle) * dist;
+      final double px = (cos(angle) * dist / step).round() * step;
+      final double py = (sin(angle) * dist / step).round() * step;
       canvas.drawRect(
-        Rect.fromLTWH(px, py, pu, pu),
-        Paint()..color = Colors.white.withValues(alpha: 0.7)
+        Rect.fromLTWH(px, py, step, step),
+        Paint()..color = Colors.white.withValues(alpha: 0.7)..isAntiAlias = false,
       );
     }
 

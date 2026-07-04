@@ -116,7 +116,11 @@ class _PomodoroHomeScreenState extends State<PomodoroHomeScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          Positioned.fill(child: GameWidget(game: _game)),
+          Positioned.fill(
+            child: GameWidget(
+              game: _game,
+            ),
+          ),
           Positioned.fill(
             child: DecoratedBox(
               decoration: BoxDecoration(

@@ -73,11 +73,11 @@ class _CabinBackgroundLayer extends Component with HasGameReference<HearthGame> 
       _drawRect(canvas, 0, currentY + plankH - u, size.width, u, const Color(0xFF1A1008), u);
 
       // Horizontal Wood grain lines
-      for (int i = 0; i < 12; i++) {
-        final double grainW = size.width * (0.1 + rand.nextDouble() * 0.3);
+      for (int i = 0; i < 18; i++) {
+        final double grainW = size.width * (0.05 + rand.nextDouble() * 0.2);
         final double grainX = rand.nextDouble() * (size.width - grainW);
         final double grainY = currentY + (rand.nextDouble() * (plankH - u));
-        _drawRect(canvas, grainX, grainY, grainW, u * 0.5, const Color(0xFF1A1008).withValues(alpha: 0.2), u);
+        _drawRect(canvas, grainX, grainY, grainW, u * 0.5, const Color(0xFF1A1008).withValues(alpha: 0.3), u);
       }
 
       y += plankH;
@@ -99,19 +99,19 @@ class _CabinBackgroundLayer extends Component with HasGameReference<HearthGame> 
       _drawRect(canvas, currentX + boardW - u, 0, u, floorTop, const Color(0xFF3D2518), u); // Right seam
 
       // Vertical Grain
-      for (int i = 0; i < 6; i++) {
+      for (int i = 0; i < 10; i++) {
         final double gx = currentX + (rand.nextDouble() * (boardW - u));
-        final double gh = floorTop * (0.2 + rand.nextDouble() * 0.5);
+        final double gh = floorTop * (0.1 + rand.nextDouble() * 0.4);
         final double gy = rand.nextDouble() * (floorTop - gh);
-        _drawRect(canvas, gx, gy, u * 0.5, gh, const Color(0xFF3D2518).withValues(alpha: 0.15), u);
+        _drawRect(canvas, gx, gy, u * 0.5, gh, const Color(0xFF3D2518).withValues(alpha: 0.25), u);
       }
 
       // Knots with rings
-      if (rand.nextDouble() > 0.7) {
+      if (rand.nextDouble() > 0.6) {
         final double kx = currentX + (rand.nextDouble() * (boardW - 3*u)).clamp(u, boardW - 4*u);
         final double ky = rand.nextDouble() * (floorTop - 3*u);
         _drawRect(canvas, kx, ky, 2*u, 2*u, const Color(0xFF2D1A10), u);
-        _drawRect(canvas, kx-u, ky-u, 4*u, u*0.5, const Color(0xFF2D1A10).withValues(alpha: 0.1), u); // Ring
+        _drawRect(canvas, kx-u, ky-u, 4*u, u, const Color(0xFF2D1A10).withValues(alpha: 0.2), u); // Ring
       }
 
       x += boardW;
@@ -121,21 +121,18 @@ class _CabinBackgroundLayer extends Component with HasGameReference<HearthGame> 
   void _drawCenterBrickChimney(Canvas canvas, Size size, double floorTop, double u) {
     final double baseW = _snap(size.width * 0.38, u);
     final double topW = _snap(size.width * 0.28, u);
-    final double chimneyX = _snap((size.width - baseW) / 2, u);
     final double chimneyH = floorTop - (10 * u);
 
-    final Paint brickPaint = Paint()..color = const Color(0xFF6A4A34);
-    final Paint mortarPaint = Paint()..color = const Color(0xFF4E3527);
+    final Paint brickPaint = Paint()..color = const Color(0xFF6A4A34)..isAntiAlias = false;
     final Random rand = Random(99);
 
-    // Tapered Chimney
-    final Path chimneyPath = Path()
-      ..moveTo(_snap(size.width / 2 - topW / 2, u), 0)
-      ..lineTo(_snap(size.width / 2 + topW / 2, u), 0)
-      ..lineTo(_snap(size.width / 2 + baseW / 2, u), chimneyH)
-      ..lineTo(_snap(size.width / 2 - baseW / 2, u), chimneyH)
-      ..close();
-    canvas.drawPath(chimneyPath, brickPaint);
+    // Tapered Chimney (Approximated with rects for pixel look)
+    for (double y = 0; y < chimneyH; y += u) {
+      final double progress = y / chimneyH;
+      final double currentW = _snap(topW + (baseW - topW) * progress, u);
+      final double currentX = _snap((size.width - currentW) / 2, u);
+      _drawRect(canvas, currentX, y, currentW, u, const Color(0xFF6A4A34), u);
+    }
 
     // Bricks on chimney
     for (double y = 2 * u; y < chimneyH - 2 * u; y += 4 * u) {
@@ -153,7 +150,7 @@ class _CabinBackgroundLayer extends Component with HasGameReference<HearthGame> 
       }
 
       // Random brick variations
-      if (rand.nextDouble() > 0.7) {
+      if (rand.nextDouble() > 0.6) {
         final double bx = currentX + rand.nextDouble() * (currentW - 4 * u);
         _drawRect(canvas, bx, y + u, 3 * u, 2 * u, const Color(0xFF7A5A44), u);
       }
@@ -161,8 +158,8 @@ class _CabinBackgroundLayer extends Component with HasGameReference<HearthGame> 
   }
 
   void _drawFrames(Canvas canvas, Size size, double u) {
-    final Paint framePaint = Paint()..color = const Color(0xFF3B2317);
-    final Paint matPaint = Paint()..color = const Color(0xFF8C6B4B);
+    final Paint framePaint = Paint()..color = const Color(0xFF3B2317)..isAntiAlias = false;
+    final Paint matPaint = Paint()..color = const Color(0xFF8C6B4B)..isAntiAlias = false;
 
     // Left Frame (Landscape)
     final Rect left = Rect.fromLTWH(_snap(7 * u, u), _snap(16 * u, u), _snap(14 * u, u), _snap(12 * u, u));
@@ -171,6 +168,7 @@ class _CabinBackgroundLayer extends Component with HasGameReference<HearthGame> 
     final Rect leftArt = left.deflate(2 * u);
     _drawRect(canvas, leftArt.left, leftArt.top, leftArt.width, leftArt.height, const Color(0xFF5E7B68), u);
     _drawRect(canvas, leftArt.left + 2*u, leftArt.top + 3*u, 4*u, 3*u, const Color(0xFF4A6347), u); // Tree silhouette
+    _drawRect(canvas, leftArt.left + 8*u, leftArt.top + 2*u, 2*u, 2*u, const Color(0xFFF1C40F), u); // Sun
 
     // Right Frame (Map)
     final Rect right = Rect.fromLTWH(
@@ -202,7 +200,7 @@ class _CabinBackgroundLayer extends Component with HasGameReference<HearthGame> 
 
     // Stone pattern (Detailed stones)
     final Random rand = Random(77);
-    for (int i = 0; i < 25; i++) {
+    for (int i = 0; i < 35; i++) {
       final double sx = x + rand.nextDouble() * (w - 6 * u);
       final double sy = y + rand.nextDouble() * (h - 5 * u);
       final double sw = (3 + rand.nextInt(4)) * u;
@@ -210,8 +208,8 @@ class _CabinBackgroundLayer extends Component with HasGameReference<HearthGame> 
       final Color stoneColor = Color.lerp(const Color(0xFF98724D), const Color(0xFF8A623D), rand.nextDouble())!;
 
       _drawRect(canvas, sx, sy, sw, sh, stoneColor, u);
-      _drawRect(canvas, sx, sy, sw, u * 0.5, const Color(0xFFA67D55).withValues(alpha: 0.5), u); // Top highlight
-      _drawRect(canvas, sx, sy, u * 0.5, sh, const Color(0xFFA67D55).withValues(alpha: 0.3), u); // Left highlight
+      _drawRect(canvas, sx, sy, sw, u * 0.5, const Color(0xFFA67D55).withValues(alpha: 0.6), u); // Top highlight
+      _drawRect(canvas, sx, sy, u * 0.5, sh, const Color(0xFFA67D55).withValues(alpha: 0.4), u); // Left highlight
     }
 
     // Mantel (Stronger wood presence)
@@ -230,20 +228,16 @@ class _CabinBackgroundLayer extends Component with HasGameReference<HearthGame> 
   }
 
   void _drawRugs(Canvas canvas, Size size, double floorTop, double u) {
-    final Paint rug = Paint()..color = const Color(0xFF933B33);
-    final Paint edge = Paint()..color = const Color(0xFFBC5A4D);
-    final RRect left = RRect.fromRectAndRadius(
-      Rect.fromLTWH(_snap(2 * u, u), _snap(floorTop + 6 * u, u), _snap(24 * u, u), _snap(11 * u, u)),
-      Radius.circular(6 * u),
-    );
-    final RRect right = RRect.fromRectAndRadius(
-      Rect.fromLTWH(_snap(size.width - 30 * u, u), _snap(floorTop + 6 * u, u), _snap(26 * u, u), _snap(12 * u, u)),
-      Radius.circular(6 * u),
-    );
-    canvas.drawRRect(left, rug);
-    canvas.drawRRect(right, rug);
-    canvas.drawRRect(left.deflate(u), edge..color = const Color(0xFF8A312B));
-    canvas.drawRRect(right.deflate(u), edge..color = const Color(0xFF8A312B));
+    final Paint rug = Paint()..color = const Color(0xFF933B33)..isAntiAlias = false;
+    final Rect left = Rect.fromLTWH(_snap(2 * u, u), _snap(floorTop + 6 * u, u), _snap(24 * u, u), _snap(11 * u, u));
+    final Rect right = Rect.fromLTWH(_snap(size.width - 30 * u, u), _snap(floorTop + 6 * u, u), _snap(26 * u, u), _snap(12 * u, u));
+
+    canvas.drawRect(left, rug);
+    canvas.drawRect(right, rug);
+
+    // Rug details
+    _drawRect(canvas, left.left + u, left.top + u, left.width - 2*u, left.height - 2*u, const Color(0xFF8A312B), u);
+    _drawRect(canvas, right.left + u, right.top + u, right.width - 2*u, right.height - 2*u, const Color(0xFF8A312B), u);
   }
 
   void _drawShelvesAndTables(Canvas canvas, Size size, double floorTop, double u) {
@@ -273,18 +267,14 @@ class _CabinBackgroundLayer extends Component with HasGameReference<HearthGame> 
     final double y = _snap(floorTop + 4 * u, u);
     final double pu = u * 0.5;
 
-    // Shadow
-    canvas.drawOval(
-      Rect.fromCenter(center: Offset(x + 4*u, y + 10*u), width: 12*u, height: 3*u),
-      Paint()..color = Colors.black.withValues(alpha: 0.3)
-    );
+    // Shadow (Rect-based for pixel look)
+    _drawRect(canvas, x, y + 9*u, 8*u, u, Colors.black.withValues(alpha: 0.3), u);
 
     canvas.save();
     canvas.translate(x, y);
 
     // Breathe effect
-    canvas.translate(0, -breathe * u);
-    canvas.scale(1.0, 1.0 + breathe * 0.04);
+    canvas.translate(0, _snap(-breathe * u, pu));
 
     // Miner Body (Detailed Overalls)
     _drawRect(canvas, 0, 8*pu, 16*pu, 12*pu, const Color(0xFF2A5298), pu); // Dark Blue
@@ -295,7 +285,7 @@ class _CabinBackgroundLayer extends Component with HasGameReference<HearthGame> 
     _drawRect(canvas, -2*pu, 9*pu, 4*pu, 4*pu, const Color(0xFFF57F17), pu); // Arm shadow L
     _drawRect(canvas, 14*pu, 9*pu, 4*pu, 4*pu, const Color(0xFFF9A825), pu); // Arm R
 
-    // Head with subtle Look-at-Fire tilt
+    // Head with subtle Look-at-Fire tilt (Snap rotations or avoid them if possible, but let's keep it subtle)
     final double lookTilt = sin(_time * 0.5) * 0.05;
     canvas.save();
     canvas.translate(8*pu, 4*pu);
@@ -322,7 +312,10 @@ class _CabinBackgroundLayer extends Component with HasGameReference<HearthGame> 
     final double lampFlicker = (sin(_time * 20) + 1.0) * 0.5;
     _drawRect(canvas, 6*pu, -7*pu, 4*pu, 3*pu, const Color(0xFF37474F), pu);
     _drawRect(canvas, 7*pu, -6*pu, 2*pu, 2*pu, const Color(0xFFFFF176), pu);
-    canvas.drawCircle(Offset(8*pu, -5*pu), (3 + lampFlicker) * pu, Paint()..color = const Color(0xFFFFF9C4).withValues(alpha: 0.3 + lampFlicker * 0.2));
+    // Replaced Circle with Rect for pixel lamp glow
+    if (lampFlicker > 0.5) {
+      _drawRect(canvas, 5*pu, -8*pu, 6*pu, 5*pu, const Color(0xFFFFF9C4).withValues(alpha: 0.2), pu);
+    }
 
     canvas.restore(); // End Head Tilt
 
@@ -340,13 +333,14 @@ class _CabinBackgroundLayer extends Component with HasGameReference<HearthGame> 
     final double flicker = sin(_time * 10) * 0.04 + sin(_time * 17) * 0.02;
     final double intensity = 0.35 + flicker;
 
-    // 1. Ambient Darkening (Vignette & Corners)
+    // 1. Ambient Darkening (Vignette & Corners) - Snapped Gradients
     final Paint ambientPaint = Paint()
+      ..isAntiAlias = false
       ..shader = RadialGradient(
         colors: [
           Colors.transparent,
-          Colors.black.withValues(alpha: 0.2),
-          Colors.black.withValues(alpha: 0.5),
+          Colors.black.withValues(alpha: 0.25),
+          Colors.black.withValues(alpha: 0.6),
         ],
         stops: const [0.4, 0.8, 1.0],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
@@ -354,6 +348,7 @@ class _CabinBackgroundLayer extends Component with HasGameReference<HearthGame> 
 
     // 2. Fire glow on floor (Directional)
     final Paint floorGlow = Paint()
+      ..isAntiAlias = false
       ..shader = RadialGradient(
         colors: [
           const Color(0xFFFF7700).withValues(alpha: intensity),
@@ -367,6 +362,7 @@ class _CabinBackgroundLayer extends Component with HasGameReference<HearthGame> 
 
     // 3. Fire glow on walls
     final Paint wallGlow = Paint()
+      ..isAntiAlias = false
       ..shader = RadialGradient(
         colors: [
           const Color(0xFFFF7700).withValues(alpha: intensity * 0.7),
@@ -383,24 +379,25 @@ class _CabinBackgroundLayer extends Component with HasGameReference<HearthGame> 
     _drawDirectionalShadow(canvas, Offset(centerX, floorTop), Offset(_snap(size.width - 28 * u, u) + 8 * u, floorTop + 13 * u), 14 * u, 5 * u, u); // Table
 
     // 5. Corner Shadows (Ambient Occlusion)
-    final Paint cornerPaint = Paint()..color = Colors.black.withValues(alpha: 0.15);
-    canvas.drawRect(Rect.fromLTWH(0, 0, 4 * u, size.height), cornerPaint); // Left corner
-    canvas.drawRect(Rect.fromLTWH(size.width - 4 * u, 0, 4 * u, size.height), cornerPaint); // Right corner
+    final Paint cornerPaint = Paint()..color = Colors.black.withValues(alpha: 0.2)..isAntiAlias = false;
+    _drawRect(canvas, 0, 0, 4 * u, size.height, Colors.black.withValues(alpha: 0.2), u);
+    _drawRect(canvas, size.width - 4 * u, 0, 4 * u, size.height, Colors.black.withValues(alpha: 0.2), u);
   }
 
   void _drawDirectionalShadow(Canvas canvas, Offset lightSource, Offset objectPos, double width, double height, double u) {
     final double dx = objectPos.dx - lightSource.dx;
     final double distance = dx.abs();
     final double shadowStretch = (distance / (20 * u)).clamp(1.0, 2.5);
-    final double shadowOffset = dx * 0.15;
+    final double shadowOffset = _snap(dx * 0.15, u);
 
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(objectPos.dx + shadowOffset, objectPos.dy),
-        width: width * shadowStretch,
-        height: height
-      ),
-      Paint()..color = Colors.black.withValues(alpha: 0.25)
+    _drawRect(
+      canvas,
+      objectPos.dx + shadowOffset - (width * shadowStretch / 2),
+      objectPos.dy - (height / 2),
+      width * shadowStretch,
+      height,
+      Colors.black.withValues(alpha: 0.3),
+      u
     );
   }
 
@@ -409,7 +406,6 @@ class _CabinBackgroundLayer extends Component with HasGameReference<HearthGame> 
     final double baseY = fireplace.bottom - 4 * u;
 
     // Charred Logs with Glowing Embers
-    final Paint logPaint = Paint()..color = const Color(0xFF211510);
     _drawRect(canvas, centerX - 5 * u, baseY - u, 4 * u, 2 * u, const Color(0xFF2D1A10), u);
     _drawRect(canvas, centerX + u, baseY - u, 4 * u, 2 * u, const Color(0xFF2D1A10), u);
     _drawRect(canvas, centerX - 2 * u, baseY - 2.5 * u, 4 * u, 2 * u, const Color(0xFF3E2723), u);
@@ -421,11 +417,10 @@ class _CabinBackgroundLayer extends Component with HasGameReference<HearthGame> 
 
     final double t = _time * 5.0;
 
-    // Multi-layered Fluid Flames (Increased size)
+    // Multi-layered Pixelated Flames (Rect-based for pixel art style)
     for (int i = 0; i < 4; i++) {
-      final double layerT = t + i * 1.2;
-      final double wobble = sin(layerT) * 0.8 * u;
-      final double heightScale = 1.1 + sin(layerT * 0.8) * 0.3;
+      final double layerT = t + i * 1.5;
+      final double wobble = _snap(sin(layerT) * 1.5 * u, u);
 
       final Color flameColor = [
         const Color(0xFFE65100), // Deep orange
@@ -434,26 +429,15 @@ class _CabinBackgroundLayer extends Component with HasGameReference<HearthGame> 
         const Color(0xFFFFF8E1), // White-hot center
       ][i];
 
-      final double flameW = (8 - i * 2) * u;
-      final double flameH = (12 - i * 2.5) * u * heightScale;
+      final double flameW = (10 - i * 2) * u;
+      final double flameH = (14 - i * 3) * u;
 
-      canvas.drawPath(
-        Path()
-          ..moveTo(centerX - flameW / 2 + wobble, baseY - 2 * u)
-          ..quadraticBezierTo(centerX + wobble * 1.5, baseY - 2 * u - flameH, centerX + flameW / 2 + wobble, baseY - 2 * u)
-          ..close(),
-        Paint()..color = flameColor.withValues(alpha: 0.85 - i * 0.1),
-      );
+      _drawRect(canvas, centerX - (flameW / 2) + wobble, baseY - 2 * u - flameH, flameW, flameH, flameColor.withValues(alpha: 0.8), u);
+      // Flicker top part
+      if (sin(t * 10 + i) > 0) {
+        _drawRect(canvas, centerX - (flameW / 4) + wobble, baseY - 2 * u - flameH - 2*u, flameW/2, 2*u, flameColor, u);
+      }
     }
-
-    // Dynamic Atmospheric Glow (Heat Haze)
-    final double flicker = (sin(_time * 12) + sin(_time * 19)) * 0.06;
-    canvas.drawCircle(
-      Offset(centerX, baseY - 5 * u),
-      (15 + flicker * 25) * u,
-      Paint()..maskFilter = MaskFilter.blur(BlurStyle.normal, 6 * u)
-            ..color = const Color(0xFFFF6D00).withValues(alpha: 0.25 + flicker),
-    );
 
     // High-Velocity Sparks
     for (int i = 0; i < 15; i++) {
@@ -461,9 +445,9 @@ class _CabinBackgroundLayer extends Component with HasGameReference<HearthGame> 
       final double life = (_time * 1.5 + seed) % 3.0;
       final double progress = life / 3.0;
 
-      final double x = centerX + sin(life * 3.0 + seed) * 10 * u;
-      final double y = baseY - 2 * u - (progress * 35 * u);
-      final double sz = (1.2 - progress) * u * 0.7;
+      final double x = centerX + _snap(sin(life * 3.0 + seed) * 12 * u, u);
+      final double y = baseY - 2 * u - _snap(progress * 40 * u, u);
+      final double sz = _snap((1.2 - progress) * u, u).clamp(u, 2*u);
       final double alpha = (1.0 - progress).clamp(0.0, 1.0);
 
       if (progress < 0.9) {
@@ -475,7 +459,7 @@ class _CabinBackgroundLayer extends Component with HasGameReference<HearthGame> 
   void _drawRect(Canvas canvas, double x, double y, double w, double h, Color color, double u) {
     canvas.drawRect(
       Rect.fromLTWH(_snap(x, u), _snap(y, u), _snap(w, u), _snap(h, u)),
-      Paint()..color = color,
+      Paint()..color = color..isAntiAlias = false,
     );
   }
 
