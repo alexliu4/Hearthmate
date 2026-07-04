@@ -18,45 +18,70 @@ class HearthObject extends Component with HasGameReference<HearthGame> {
 
   @override
   void render(Canvas canvas) {
-    final double bob = sin(_time * 2.5) * (u * 0.4);
-    final double pu = u * 0.5;
+    final double bob = sin(_time * 2.0) * (u * 0.6);
+    final double pu = u * 0.4;
 
     canvas.save();
     canvas.translate(position.x, position.y + bob);
 
-    // Simple procedural crystal for now
-    final Path crystalPath = Path()
-      ..moveTo(0, -4 * pu)
-      ..lineTo(3 * pu, 0)
-      ..lineTo(0, 4 * pu)
-      ..lineTo(-3 * pu, 0)
-      ..close();
+    // Rainbow Sphere (Gem)
+    final double radius = 5 * pu;
+    final Rect gemRect = Rect.fromCircle(center: Offset.zero, radius: radius);
 
-    // Shadow
+    // Draw slices of colors for rainbow effect
+    final List<Color> rainbow = [
+      const Color(0xFFFF5252),
+      const Color(0xFFFFD740),
+      const Color(0xFF69F0AE),
+      const Color(0xFF40C4FF),
+      const Color(0xFF7C4DFF),
+    ];
+
+    for (int i = 0; i < rainbow.length; i++) {
+      final double startAngle = (i / rainbow.length) * 2 * pi;
+      final double sweepAngle = (1 / rainbow.length) * 2 * pi;
+      canvas.drawArc(
+        gemRect,
+        startAngle,
+        sweepAngle,
+        true,
+        Paint()..color = rainbow[i]
+      );
+    }
+
+    // Highlight
+    canvas.drawCircle(
+      Offset(-radius * 0.4, -radius * 0.4),
+      radius * 0.3,
+      Paint()..color = Colors.white.withValues(alpha: 0.6)
+    );
+
+    // Shadow on ground
     canvas.drawOval(
-      Rect.fromCenter(center: Offset(0, 8 * pu - bob), width: 6 * pu, height: 2 * pu),
-      Paint()..color = Colors.black.withValues(alpha: 0.15),
+      Rect.fromCenter(center: Offset(0, 10 * pu - bob), width: 8 * pu, height: 3 * pu),
+      Paint()..color = Colors.black.withValues(alpha: 0.2),
     );
 
-    // Crystal layers
-    canvas.drawPath(crystalPath, Paint()..color = const Color(0xFF73D5FF));
-    canvas.drawPath(
-      Path()
-        ..moveTo(0, -4 * pu)
-        ..lineTo(1.5 * pu, 0)
-        ..lineTo(0, 4 * pu)
-        ..close(),
-      Paint()..color = Colors.white.withValues(alpha: 0.3),
-    );
-
-    // Glow
+    // Magical Glow
     canvas.drawCircle(
       Offset.zero,
-      5 * pu,
+      radius * 2.5,
       Paint()
-        ..maskFilter = MaskFilter.blur(BlurStyle.normal, 2 * pu)
-        ..color = const Color(0xFF73D5FF).withValues(alpha: 0.3),
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, 3 * pu)
+        ..color = const Color(0xFFFFFFFF).withValues(alpha: 0.2 + (sin(_time * 3) + 1) * 0.1),
     );
+
+    // Sparks/Particles
+    for (int i = 0; i < 4; i++) {
+      final double angle = _time * 2 + (i * pi / 2);
+      final double dist = radius * 1.5 + sin(_time * 4 + i) * pu;
+      final double px = cos(angle) * dist;
+      final double py = sin(angle) * dist;
+      canvas.drawRect(
+        Rect.fromLTWH(px, py, pu, pu),
+        Paint()..color = Colors.white.withValues(alpha: 0.7)
+      );
+    }
 
     canvas.restore();
   }
