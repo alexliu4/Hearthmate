@@ -5,6 +5,7 @@ import 'package:hearthmate/core/voyage_timer_logic.dart';
 import 'package:hearthmate/features/pomodoro/presentation/widgets/character_select_dialog.dart';
 import 'package:hearthmate/features/pomodoro/presentation/widgets/collection_overlay_dialog.dart';
 import 'package:hearthmate/features/pomodoro/presentation/widgets/home_action_panel.dart';
+import 'package:hearthmate/features/settings/presentation/screens/settings_screen.dart';
 import 'package:hearthmate/game/game.dart';
 
 class PomodoroHomeScreen extends StatefulWidget {
@@ -94,6 +95,12 @@ class _PomodoroHomeScreenState extends State<PomodoroHomeScreen> {
     return (shortestSide / 390).clamp(0.82, 1.25);
   }
 
+  void _openSettings() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const SettingsScreen()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final String voyageLabel = _timer.isRunning
@@ -133,6 +140,41 @@ class _PomodoroHomeScreenState extends State<PomodoroHomeScreen> {
                   ),
                   child: Column(
                     children: [
+                      Align(
+                        alignment: Alignment.topRight,
+                        child: GestureDetector(
+                          onTap: _openSettings,
+                          behavior: HitTestBehavior.opaque,
+                          child: Semantics(
+                            label: 'Settings',
+                            button: true,
+                            child: Container(
+                              width: 50 * scale,
+                              height: 50 * scale,
+                              decoration: BoxDecoration(
+                              color: const Color(0xFF6A4430),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: const Color(0xFFD6B07A),
+                                width: 3 * scale,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.3),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                              child: Icon(
+                                Icons.settings,
+                                color: const Color(0xFFD6B07A),
+                                size: 30 * scale,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                       const Spacer(),
                       HomeActionPanel(
                         maxWidth: constraints.maxWidth,

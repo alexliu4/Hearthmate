@@ -37,7 +37,6 @@ class _CabinBackgroundLayer extends Component with HasGameReference<HearthGame> 
     _drawRugs(canvas, size, floorTop, u);
     _drawTableAndCrystal(canvas, size, floorTop, u);
     _drawMinerSprite(canvas, size, floorTop, u);
-    _drawGearOrb(canvas, size, u);
     _drawFireAndSparks(canvas, fireplace, u);
   }
 
@@ -177,22 +176,6 @@ class _CabinBackgroundLayer extends Component with HasGameReference<HearthGame> 
 
     _drawRect(canvas, x - 2 * u, y + 8 * u, 5 * u, 2 * u, const Color(0xFFE8A12F), u);
     _drawRect(canvas, x + 8 * u, y + 8 * u, 4 * u, 2 * u, const Color(0xFFE8A12F), u);
-  }
-
-  void _drawGearOrb(Canvas canvas, Size size, double u) {
-    final double r = 4 * u;
-    final Offset c = Offset(_snap(size.width - 9 * u, u), _snap(9 * u, u));
-    final double pulse = 0.78 + sin(_time * 2.5) * 0.12;
-
-    canvas.drawCircle(c, r * 1.8, Paint()..color = const Color(0xFFFFB144).withValues(alpha: 0.20 * pulse));
-    canvas.drawCircle(c, r * 1.2, Paint()..color = const Color(0xFFFFA02E));
-    canvas.drawCircle(c, r * 0.62, Paint()..color = const Color(0xFFFFDE9D));
-
-    for (int i = 0; i < 8; i++) {
-      final double a = (pi * 2 * i) / 8;
-      final Offset p = Offset(c.dx + cos(a) * r * 0.9, c.dy + sin(a) * r * 0.9);
-      canvas.drawRect(Rect.fromCenter(center: p, width: u * 0.8, height: u * 0.8), Paint()..color = const Color(0xFF8A5A2C));
-    }
   }
 
   void _drawFireAndSparks(Canvas canvas, Rect fireplace, double u) {
