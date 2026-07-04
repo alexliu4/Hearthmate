@@ -1,94 +1,70 @@
-import 'dart:math';
+import 'dart:ui';
 import 'package:flame/components.dart';
-import 'package:flutter/material.dart';
-import 'package:hearthmate/game/hearth_game.dart';
+import 'package:flame/sprite.dart';
+import '../hearth_game.dart';
 
-class HearthObject extends Component with HasGameReference<HearthGame> {
-  HearthObject({required this.position, required this.u});
-
-  final Vector2 position;
-  final double u;
-  double _time = 0;
+class HearthObject extends SpriteAnimationComponent with HasGameRef<HearthGame> {
+  HearthObject({
+    required super.position,
+    required super.size,
+  }) : super(anchor: Anchor.bottomCenter);
 
   @override
-  void update(double dt) {
-    _time += dt;
-    super.update(dt);
+  Future<void> onLoad() async {
+    final spriteSheet = await gameRef.loadSpriteSheet(
+      'miner.png',
+      32,
+      32,
+    );
+
+    animation = spriteSheet.createAnimation(
+      row: 0,
+      stepTime: 0.5,
+      to: 4,
+    );
+
+    // Fix: Set filter quality on the component's paint
+    paint.filterQuality = FilterQuality.none;
+    paint.isAntiAlias = false;
   }
+}
+
+class FireObject extends SpriteAnimationComponent with HasGameRef<HearthGame> {
+  FireObject({
+    required super.position,
+    required super.size,
+  }) : super(anchor: Anchor.bottomCenter);
 
   @override
-  void render(Canvas canvas) {
-    final double bob = sin(_time * 2.0) * (u * 0.6);
-    final double pu = u * 0.4;
-
-    canvas.save();
-    canvas.translate(position.x, position.y + bob);
-
-    // Rainbow Sphere (Gem)
-    final double radius = 5 * pu;
-    final Rect gemRect = Rect.fromCircle(center: Offset.zero, radius: radius);
-
-    // Draw slices of colors for rainbow effect
-    final List<Color> rainbow = [
-      const Color(0xFFFF5252),
-      const Color(0xFFFFD740),
-      const Color(0xFF69F0AE),
-      const Color(0xFF40C4FF),
-      const Color(0xFF7C4DFF),
-    ];
-
-    // Drawing a pixelated sphere with rects
-    final double step = pu;
-    for (double x = -radius; x < radius; x += step) {
-      for (double y = -radius; y < radius; y += step) {
-        if (x * x + y * y <= radius * radius) {
-          final double angle = (atan2(y, x) + pi) / (2 * pi);
-          final int colorIndex = (angle * rainbow.length).floor() % rainbow.length;
-          canvas.drawRect(
-            Rect.fromLTWH(x, y, step, step),
-            Paint()..color = rainbow[colorIndex]..isAntiAlias = false,
-          );
-        }
-      }
-    }
-
-    // Highlight (Rect based)
-    canvas.drawRect(
-      Rect.fromLTWH(-radius * 0.5, -radius * 0.5, 2 * pu, 2 * pu),
-      Paint()..color = Colors.white.withValues(alpha: 0.6)..isAntiAlias = false,
+  Future<void> onLoad() async {
+    final spriteSheet = await gameRef.loadSpriteSheet(
+      'fire.png',
+      32,
+      32,
     );
 
-    // Shadow on ground (Rect based)
-    canvas.drawRect(
-      Rect.fromLTWH(-4 * pu, 9 * pu - bob, 8 * pu, 2 * pu),
-      Paint()..color = Colors.black.withValues(alpha: 0.2)..isAntiAlias = false,
+    animation = spriteSheet.createAnimation(
+      row: 0,
+      stepTime: 0.15,
+      to: 4,
     );
 
-    // Magical Glow (Rect based)
-    final double glowRadius = radius * 2;
-    for (double x = -glowRadius; x < glowRadius; x += step * 2) {
-      for (double y = -glowRadius; y < glowRadius; y += step * 2) {
-        if (x * x + y * y <= glowRadius * glowRadius) {
-          canvas.drawRect(
-            Rect.fromLTWH(x, y, step * 2, step * 2),
-            Paint()..color = Colors.white.withValues(alpha: 0.05 + (sin(_time * 3) + 1) * 0.05)..isAntiAlias = false,
-          );
-        }
-      }
-    }
+    // Fix: Set filter quality on the component's paint
+    paint.filterQuality = FilterQuality.none;
+    paint.isAntiAlias = false;
+  }
+}
 
-    // Sparks/Particles
-    for (int i = 0; i < 4; i++) {
-      final double angle = _time * 2 + (i * pi / 2);
-      final double dist = radius * 1.5 + sin(_time * 4 + i) * pu;
-      final double px = (cos(angle) * dist / step).round() * step;
-      final double py = (sin(angle) * dist / step).round() * step;
-      canvas.drawRect(
-        Rect.fromLTWH(px, py, step, step),
-        Paint()..color = Colors.white.withValues(alpha: 0.7)..isAntiAlias = false,
-      );
-    }
+class CrystalObject extends SpriteComponent with HasGameRef<HearthGame> {
+  CrystalObject({
+    required super.position,
+    required super.size,
+  }) : super(anchor: Anchor.center);
 
-    canvas.restore();
+  @override
+  Future<void> onLoad() async {
+    sprite = await gameRef.loadSprite('crystal.png');
+    paint.filterQuality = FilterQuality.none;
+    paint.isAntiAlias = false;
   }
 }
