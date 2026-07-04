@@ -11,11 +11,15 @@ class HomeActionPanel extends StatelessWidget {
     required this.onVoyageTap,
     required this.onVoyageLongPress,
     required this.onCollectionTap,
+    this.roomName = 'THE HEARTH ROOM',
+    this.statusText = 'LEVEL 5 - FRIENDSHIP: WARM EMBERS',
   });
 
   final double maxWidth;
   final double scale;
   final String voyageLabel;
+  final String roomName;
+  final String statusText;
   final String? selectedCharacter;
   final VoidCallback onCharacterTap;
   final VoidCallback onVoyageTap;
@@ -57,7 +61,7 @@ class HomeActionPanel extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  'THE HEARTH ROOM',
+                  roomName,
                   style: TextStyle(
                     color: const Color(0xFFF1D2A2),
                     fontWeight: FontWeight.w800,
@@ -159,7 +163,7 @@ class HomeActionPanel extends StatelessWidget {
           ),
           SizedBox(height: 12 * scale),
           Text(
-            'LEVEL 5 - FRIENDSHIP: WARM EMBERS',
+            statusText,
             textAlign: TextAlign.center,
             style: TextStyle(
               color: const Color(0xFFDFC89E),

@@ -3,11 +3,25 @@ import 'dart:math';
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
+import 'package:hearthmate/game/components/hearth_object.dart';
 
 class HearthGame extends FlameGame {
   @override
   Future<void> onLoad() async {
-    await add(_CabinBackgroundLayer());
+    final background = _CabinBackgroundLayer();
+    await add(background);
+
+    final double u = (min(size.x, size.y) / 95).clamp(3.2, 6.2);
+    final double floorTop = (size.y * 0.45 / u).roundToDouble() * u;
+    final double tableX = ((size.x - 28 * u) / u).roundToDouble() * u;
+    final double tableY = ((floorTop + 10 * u) / u).roundToDouble() * u;
+
+    await add(
+      HearthObject(
+        position: Vector2(tableX + 8 * u, tableY - 2 * u),
+        u: u,
+      ),
+    );
   }
 }
 
@@ -23,8 +37,8 @@ class _CabinBackgroundLayer extends Component with HasGameReference<HearthGame> 
   @override
   void render(Canvas canvas) {
     final Size size = game.size.toSize();
-    final double u = (size.shortestSide / 95).clamp(3.2, 6.2);
-    final double floorTop = _snap(size.height * 0.70, u);
+    final double u = (min(size.width, size.height) / 95).clamp(3.2, 6.2);
+    final double floorTop = _snap(size.height * 0.45, u);
 
     _drawRect(canvas, 0, 0, size.width, size.height, const Color(0xFF4D2F1E), u);
     _drawRect(canvas, 0, floorTop, size.width, size.height - floorTop, const Color(0xFF382215), u);
@@ -32,10 +46,10 @@ class _CabinBackgroundLayer extends Component with HasGameReference<HearthGame> 
     _drawWallBoards(canvas, size, floorTop, u);
     _drawCenterBrickChimney(canvas, size, floorTop, u);
     _drawFrames(canvas, size, u);
-    _drawCoinShelf(canvas, size, floorTop, u);
     final Rect fireplace = _drawFireplace(canvas, size, floorTop, u);
     _drawRugs(canvas, size, floorTop, u);
-    _drawTableAndCrystal(canvas, size, floorTop, u);
+    _drawTable(canvas, size, floorTop, u);
+
     _drawMinerSprite(canvas, size, floorTop, u);
     _drawFireAndSparks(canvas, fireplace, u);
   }
@@ -93,23 +107,6 @@ class _CabinBackgroundLayer extends Component with HasGameReference<HearthGame> 
     _drawRect(canvas, artArea.left + 5 * u, artArea.top + 4 * u, 6 * u, 2 * u, const Color(0xFF9B5F37), u);
   }
 
-  void _drawCoinShelf(Canvas canvas, Size size, double floorTop, double u) {
-    final double shelfY = _snap(floorTop - 13 * u, u);
-    _drawRect(canvas, 4 * u, shelfY, 15 * u, 3 * u, const Color(0xFF6E4228), u);
-    _drawRect(canvas, 5 * u, shelfY + 3 * u, 2 * u, 2 * u, const Color(0xFF3A2418), u);
-    _drawRect(canvas, 16 * u, shelfY + 3 * u, 2 * u, 2 * u, const Color(0xFF3A2418), u);
-
-    final Paint coin = Paint()..color = const Color(0xFFF3BC43);
-    final Paint coinDark = Paint()..color = const Color(0xFFD19325);
-    for (int i = 0; i < 4; i++) {
-      final double x = _snap((6 + i) * u, u);
-      final double y = _snap((shelfY - (i % 2 + 1) * u), u);
-      canvas.drawRect(Rect.fromLTWH(x, y, 2 * u, u), coin);
-      canvas.drawRect(Rect.fromLTWH(x, y + u, 2 * u, u), coinDark);
-    }
-    canvas.drawRect(Rect.fromLTWH(12 * u, shelfY - 2 * u, 2 * u, 2 * u), coin);
-    canvas.drawRect(Rect.fromLTWH(13 * u, shelfY - 3 * u, 2 * u, 2 * u), coinDark);
-  }
 
   Rect _drawFireplace(Canvas canvas, Size size, double floorTop, double u) {
     final double w = _snap(size.width * 0.42, u);
@@ -141,79 +138,137 @@ class _CabinBackgroundLayer extends Component with HasGameReference<HearthGame> 
     canvas.drawRRect(right.deflate(u), edge..color = const Color(0xFF8A312B));
   }
 
-  void _drawTableAndCrystal(Canvas canvas, Size size, double floorTop, double u) {
+  void _drawTable(Canvas canvas, Size size, double floorTop, double u) {
     final double tableX = _snap(size.width - 28 * u, u);
     final double tableY = _snap(floorTop + 10 * u, u);
 
     _drawRect(canvas, tableX, tableY, 16 * u, 4 * u, const Color(0xFF6F442A), u);
     _drawRect(canvas, tableX + 2 * u, tableY + 4 * u, 2 * u, 2 * u, const Color(0xFF4B2D1D), u);
     _drawRect(canvas, tableX + 12 * u, tableY + 4 * u, 2 * u, 2 * u, const Color(0xFF4B2D1D), u);
-
-    final double crystalX = tableX + 8 * u;
-    final double crystalY = tableY - 3 * u + sin(_time * 2.6) * (u * 0.3);
-    _drawRect(canvas, crystalX - 3 * u, crystalY, 6 * u, 5 * u, const Color(0xFFFFD46E), u);
-    _drawRect(canvas, crystalX - 2 * u, crystalY + u, 4 * u, 3 * u, const Color(0xFF73D5FF), u);
-    _drawRect(canvas, crystalX - 2 * u, crystalY + 3 * u, 2 * u, 2 * u, const Color(0xFFFF7F7F), u);
-    _drawRect(canvas, crystalX, crystalY + 3 * u, 2 * u, 2 * u, const Color(0xFF8B7BFF), u);
   }
 
   void _drawMinerSprite(Canvas canvas, Size size, double floorTop, double u) {
-    final double bob = sin(_time * 2.0) * u * 0.4;
-    final double x = _snap(size.width - 17 * u, u);
-    final double y = _snap(floorTop + 6 * u + bob, u);
+    final double breathe = sin(_time * 1.5) * 0.15;
+    final double x = _snap(size.width - 18 * u, u);
+    final double y = _snap(floorTop + 4 * u, u);
 
-    _drawRect(canvas, x - 5 * u, y + 8 * u, 13 * u, 5 * u, const Color(0xFF2A2A2A), u);
-    _drawRect(canvas, x - 2 * u, y + 9 * u, 9 * u, 4 * u, const Color(0xFF3567A7), u);
+    final double pu = u * 0.5; // Smaller "pixel" unit for more detail
 
-    _drawRect(canvas, x + u, y + 3 * u, 6 * u, 6 * u, const Color(0xFFF2BE96), u);
-    _drawRect(canvas, x + u, y + 2 * u, 6 * u, 2 * u, const Color(0xFF2B1A17), u);
-    _drawRect(canvas, x + 2 * u, y + 5 * u, u, u, const Color(0xFF2A1A14), u);
-    _drawRect(canvas, x + 5 * u, y + 5 * u, u, u, const Color(0xFF2A1A14), u);
+    // Shadow
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(x + 4*u, y + 10*u), width: 12*u, height: 3*u),
+      Paint()..color = Colors.black.withValues(alpha: 0.2)
+    );
 
-    _drawRect(canvas, x, y, 9 * u, 3 * u, const Color(0xFFE49428), u);
-    _drawRect(canvas, x + u, y + u, 2 * u, 2 * u, const Color(0xFFFFEE9A), u);
-    _drawRect(canvas, x + 2 * u, y - u, 7 * u, u, const Color(0xFF4D4D4D), u);
+    canvas.save();
+    canvas.translate(x, y);
+    // Breath effect: slight vertical stretch
+    canvas.translate(0, -breathe * u);
+    canvas.scale(1.0, 1.0 + breathe * 0.05);
 
-    _drawRect(canvas, x - 2 * u, y + 8 * u, 5 * u, 2 * u, const Color(0xFFE8A12F), u);
-    _drawRect(canvas, x + 8 * u, y + 8 * u, 4 * u, 2 * u, const Color(0xFFE8A12F), u);
+    // Miner Body (Overalls)
+    _drawRect(canvas, 0, 8*pu, 16*pu, 12*pu, const Color(0xFF3567A7), pu); // Main pants
+    _drawRect(canvas, 2*pu, 6*pu, 12*pu, 4*pu, const Color(0xFF3567A7), pu); // Bib
+    _drawRect(canvas, 1*pu, 5*pu, 2*pu, 4*pu, const Color(0xFF2A4D80), pu); // Strap L
+    _drawRect(canvas, 13*pu, 5*pu, 2*pu, 4*pu, const Color(0xFF2A4D80), pu); // Strap R
+
+    // Shirt (Yellow)
+    _drawRect(canvas, 3*pu, 7*pu, 10*pu, 3*pu, const Color(0xFFF3BC43), pu);
+    _drawRect(canvas, -2*pu, 9*pu, 4*pu, 4*pu, const Color(0xFFF3BC43), pu); // Left shoulder
+    _drawRect(canvas, 14*pu, 9*pu, 4*pu, 4*pu, const Color(0xFFF3BC43), pu); // Right shoulder
+
+    // Head
+    _drawRect(canvas, 2*pu, -2*pu, 12*pu, 10*pu, const Color(0xFFF2BE96), pu); // Face
+    _drawRect(canvas, 1*pu, 1*pu, 2*pu, 5*pu, const Color(0xFF2B1A17), pu); // Sideburn L
+    _drawRect(canvas, 13*pu, 1*pu, 2*pu, 5*pu, const Color(0xFF2B1A17), pu); // Sideburn R
+
+    // Eyes
+    _drawRect(canvas, 5*pu, 4*pu, 2*pu, 2*pu, const Color(0xFF2A1A14), pu);
+    _drawRect(canvas, 10*pu, 4*pu, 2*pu, 2*pu, const Color(0xFF2A1A14), pu);
+
+    // Helmet
+    _drawRect(canvas, 1*pu, -5*pu, 14*pu, 4*pu, const Color(0xFFE49428), pu); // Base
+    _drawRect(canvas, 3*pu, -8*pu, 10*pu, 3*pu, const Color(0xFFE49428), pu); // Top
+    _drawRect(canvas, 0, -3*pu, 16*pu, 2*pu, const Color(0xFFBC7A21), pu); // Brim
+
+    // Headlamp
+    final double lampFlicker = (sin(_time * 15) + 1.0) * 0.5;
+    _drawRect(canvas, 6*pu, -7*pu, 4*pu, 3*pu, const Color(0xFF4D4D4D), pu);
+    _drawRect(canvas, 7*pu, -6*pu, 2*pu, 2*pu, const Color(0xFFFFEE9A), pu);
+
+    // Lamp Glow
+    canvas.drawCircle(
+      Offset(8*pu, -5*pu),
+      (3 + lampFlicker) * pu,
+      Paint()..color = const Color(0xFFFFF6D1).withValues(alpha: 0.3 + lampFlicker * 0.2)
+    );
+
+    // Hands
+    _drawRect(canvas, -2*pu, 13*pu, 4*pu, 3*pu, const Color(0xFFF2BE96), pu);
+    _drawRect(canvas, 14*pu, 13*pu, 4*pu, 3*pu, const Color(0xFFF2BE96), pu);
+
+    // Pickaxe (resting)
+    _drawRect(canvas, -6*pu, 12*pu, 6*pu, 2*pu, const Color(0xFF7A7A7A), pu); // Left blade
+    _drawRect(canvas, -1*pu, 8*pu, 2*pu, 12*pu, const Color(0xFF6E4228), pu); // Handle
+
+    canvas.restore();
   }
 
   void _drawFireAndSparks(Canvas canvas, Rect fireplace, double u) {
     final double centerX = fireplace.left + fireplace.width / 2;
     final double baseY = fireplace.bottom - 5 * u;
-    final double wobble = sin(_time * 12) * 0.8 * u;
-    final double flicker = (sin(_time * 9) + sin(_time * 14) * 0.5) * 0.5;
 
-    canvas.drawRect(
-      Rect.fromCenter(center: Offset(centerX - 2 * u, baseY), width: 3 * u, height: u),
-      Paint()..color = const Color(0xFF7B4A2A),
-    );
-    canvas.drawRect(
-      Rect.fromCenter(center: Offset(centerX + 2 * u, baseY), width: 3 * u, height: u),
-      Paint()..color = const Color(0xFF7B4A2A),
-    );
+    // Logs
+    _drawRect(canvas, centerX - 4 * u, baseY - u, 3 * u, 1.5 * u, const Color(0xFF5D3A26), u);
+    _drawRect(canvas, centerX + u, baseY - u, 3 * u, 1.5 * u, const Color(0xFF5D3A26), u);
+    _drawRect(canvas, centerX - 1.5 * u, baseY - 2 * u, 3 * u, 1.5 * u, const Color(0xFF7B4A2A), u);
 
-    _drawRect(canvas, centerX - 6 * u, baseY - 6 * u + wobble, 4 * u, 6 * u, const Color(0xFFFF9F2A), u);
-    _drawRect(canvas, centerX - 2 * u, baseY - 8 * u - wobble * 0.6, 4 * u, 8 * u, const Color(0xFFFFB632), u);
-    _drawRect(canvas, centerX + 2 * u, baseY - 7 * u + wobble * 0.5, 4 * u, 7 * u, const Color(0xFFFF9225), u);
-    _drawRect(canvas, centerX - u, baseY - 6 * u, 2 * u, 4 * u, const Color(0xFFFFF1A0), u);
+    final double t = _time * 4.0;
 
-    final double glowAlpha = (0.17 + flicker * 0.10).clamp(0.10, 0.30);
+    // Multi-layered flames for fluid look
+    for (int i = 0; i < 3; i++) {
+      final double layerT = t + i * 1.5;
+      final double wobble = sin(layerT) * 0.5 * u;
+      final double heightScale = 1.0 + sin(layerT * 0.7) * 0.2;
+
+      final Color flameColor = i == 0
+          ? const Color(0xFFFF4D00)
+          : (i == 1 ? const Color(0xFFFF9F2A) : const Color(0xFFFFD68B));
+      final double flameW = (6 - i * 1.5) * u;
+      final double flameH = (8 - i * 2) * u * heightScale;
+
+      canvas.drawPath(
+        Path()
+          ..moveTo(centerX - flameW / 2 + wobble, baseY - 1.5 * u)
+          ..quadraticBezierTo(centerX + wobble * 2, baseY - 1.5 * u - flameH, centerX + flameW / 2 + wobble, baseY - 1.5 * u)
+          ..close(),
+        Paint()..color = flameColor.withValues(alpha: 0.8),
+      );
+    }
+
+    // Dynamic Glow
+    final double flicker = (sin(_time * 10) + sin(_time * 17)) * 0.05;
     canvas.drawCircle(
       Offset(centerX, baseY - 3 * u),
-      10 * u,
-      Paint()..color = const Color(0xFFFFAA42).withValues(alpha: glowAlpha),
+      (12 + flicker * 20) * u,
+      Paint()..maskFilter = MaskFilter.blur(BlurStyle.normal, 5 * u)
+            ..color = const Color(0xFFFF7700).withValues(alpha: 0.2 + flicker),
     );
 
-    for (int i = 0; i < 16; i++) {
-      final double s = _time * 1.6 + i * 0.47;
-      final double x = centerX + sin(s * 1.9) * (6 * u) + (i.isEven ? 18 * u : 30 * u);
-      final double y = baseY - (s % 6.5) * 2.3 * u;
-      final double a = (0.5 - ((s % 1.0) * 0.35)).clamp(0.10, 0.6);
-      canvas.drawRect(
-        Rect.fromCenter(center: Offset(x, y), width: u * 0.7, height: u * 0.7),
-        Paint()..color = const Color(0xFFFFD68B).withValues(alpha: a),
-      );
+    // Sparks
+    for (int i = 0; i < 12; i++) {
+      final double seed = i * 13.5;
+      final double life = (_time * 1.2 + seed) % 4.0;
+      final double progress = life / 4.0;
+
+      final double x = centerX + sin(life * 2.0 + seed) * 8 * u;
+      final double y = baseY - 2 * u - (progress * 25 * u);
+      final double size = (1.0 - progress) * u * 0.6;
+      final double alpha = (1.0 - progress).clamp(0.0, 1.0);
+
+      if (progress < 0.8) {
+        _drawRect(canvas, x, y, size, size, const Color(0xFFFFD68B).withValues(alpha: alpha), u);
+      }
     }
   }
 

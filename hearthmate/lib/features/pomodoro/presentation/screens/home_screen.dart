@@ -21,6 +21,10 @@ class _PomodoroHomeScreenState extends State<PomodoroHomeScreen> {
   Duration _elapsed = Duration.zero;
   String? _selectedCharacter;
 
+  // Example dynamic state
+  final String _roomName = 'THE HEARTH ROOM';
+  final String _statusText = 'LEVEL 5 - FRIENDSHIP: WARM EMBERS';
+
   @override
   void initState() {
     super.initState();
@@ -152,23 +156,23 @@ class _PomodoroHomeScreenState extends State<PomodoroHomeScreen> {
                               width: 50 * scale,
                               height: 50 * scale,
                               decoration: BoxDecoration(
-                              color: const Color(0xFF6A4430),
+                              color: const Color(0xFFF39C12),
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: const Color(0xFFD6B07A),
+                                color: const Color(0xFFF1C40F),
                                 width: 3 * scale,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.3),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 4),
+                                  color: const Color(0xFFFFCC33).withValues(alpha: 0.6),
+                                  blurRadius: 15 * scale,
+                                  spreadRadius: 2 * scale,
                                 ),
                               ],
                             ),
                               child: Icon(
                                 Icons.settings,
-                                color: const Color(0xFFD6B07A),
+                                color: Colors.white,
                                 size: 30 * scale,
                               ),
                             ),
@@ -180,6 +184,8 @@ class _PomodoroHomeScreenState extends State<PomodoroHomeScreen> {
                         maxWidth: constraints.maxWidth,
                         scale: scale,
                         voyageLabel: voyageLabel,
+                        roomName: _roomName,
+                        statusText: _statusText,
                         selectedCharacter: _selectedCharacter,
                         onCharacterTap: _openCharacterSelect,
                         onVoyageTap: _toggleVoyage,
